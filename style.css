@@ -1,0 +1,19 @@
+@import url('https://cdn.jsdelivr.net/npm/galmuri@latest/dist/galmuri.css');
+
+* {
+    margin: 0px;
+    padding: 0px;
+    box-sizing: border-box;
+}
+
+body {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    background-color: #123456;
+}
+
+#game {
+    margin: auto;
+    /* border: 1px solid white; */
+}
