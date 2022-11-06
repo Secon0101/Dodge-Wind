@@ -29,11 +29,11 @@ const player = {
     height: canvas.height * 0.05,
     color: "lime",
     initX: (canvas.width - canvas.height * 0.05) * 0.5,
-    initY: canvas.height * 0.8 - canvas.height * 0.05,
+    initY: canvas.height * 0.55,
     moveSpeed: canvas.height * 0.008,
     gravity: -canvas.height * 0.001,
     jumpForce: canvas.height * 0.02,
-     
+    
     init() {
         this.x = this.initX;
         this.y = this.initY;
@@ -84,7 +84,7 @@ const player = {
 
 const platform = {
     x: canvas.width * 0.1,
-    y: canvas.height * 0.8,
+    y: canvas.height * 0.6,
     width: canvas.width * 0.8,
     height: canvas.height * 0.03,
     
@@ -100,7 +100,7 @@ class Enemy {
         this.y = y;
         this.width = canvas.height * 0.03;
         this.height = canvas.height * 0.03;
-        this.speed = canvas.height * 0.002;
+        this.speed = canvas.height * 0.005;
     }
     
     calculateDirection() {
@@ -223,7 +223,7 @@ function init() {
     restartText.color = "#ffffff00";
     
     scoreInterval = setInterval(() => score++, 20);
-    enemyInterval = setInterval(spawnEnemy, 1000);
+    enemyInterval = setInterval(spawnEnemy, 3000);
     setInterval(makeWeatherParticle, 30);
     
     getJSON(`https://api.openweathermap.org/data/2.5/weather?q=${region}&appid=f19be282bbe4297868c0f1088f7477cd&units=metric`, function (err, data) {
