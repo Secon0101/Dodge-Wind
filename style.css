@@ -10,10 +10,9 @@ body {
     width: 100vw;
     height: 100vh;
     display: flex;
-    background-color: #123456;
+    background-color: #0b1f33;
 }
 
 #game {
     margin: auto;
-    /* border: 1px solid white; */
 }

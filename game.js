@@ -1,6 +1,14 @@
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
+if (window.innerHeight * 1.5 > window.innerWidth) {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerWidth / 1.5;
+} else {
+    canvas.width = window.innerHeight * 1.5;
+    canvas.height = window.innerHeight;
+}
+
 const keys = {};
 let score = 0;
 let highscore = 0;
@@ -14,15 +22,15 @@ const player = {
     dx: 0,
     dy: 0,
     onGround: false,
-    
-    initX: 380,
-    initY: 470,
-    width: 30,
-    height: 30,
-    moveSpeed: 5,
-    gravity: -1,
-    jumpForce: 15,
-    
+
+    width: canvas.height / 20,
+    height: canvas.height / 20,
+    initX: (canvas.width - canvas.height / 20) / 2,
+    initY: canvas.height * 0.8 - canvas.height / 20,
+    moveSpeed: canvas.height / 120,
+    gravity: -canvas.height / 600,
+    jumpForce: canvas.height / 40,
+     
     init() {
         this.x = this.initX;
         this.y = this.initY;
@@ -54,7 +62,6 @@ const player = {
             this.y = platform.y - this.height;
             this.dy = 0;
             this.onGround = true;
-            this.moreJump = 2;
         } else {
             this.onGround = false;
         }
@@ -72,10 +79,10 @@ const player = {
 };
 
 const platform = {
-    x: 100,
-    y: 500,
-    width: 600,
-    height: 20,
+    x: canvas.width * 0.1,
+    y: canvas.height * 0.8,
+    width: canvas.width * 0.8,
+    height: canvas.height / 30,
     
     draw() {
         ctx.fillStyle = "black";
@@ -87,9 +94,9 @@ class Enemy {
     constructor(x, y) {
         this.x = x;
         this.y = y;
-        this.width = 20;
-        this.height = 20;
-        this.speed = 1;
+        this.width = canvas.height / 30;
+        this.height = canvas.height / 30;
+        this.speed = canvas.height / 600;
     }
     
     calculateDirection() {
@@ -140,10 +147,10 @@ class Text {
     }
 }
 
-const scoreText = new Text("Score - 0", 70, 100, 30, "white", "Galmuri7", "left");
-const highscoreText = new Text("Highscore - 0", 70, 150, 30, "white", "Galmuri7", "left");
-const gameOverText = new Text("Game Over", 400, 300, 50, "#ffffff00", "Galmuri7", "center");
-const restartText = new Text("Click to Restart", 400, 350, 30, "#ffffff00", "Galmuri7", "center");
+const scoreText = new Text("Score - 0", canvas.height / 10, canvas.height / 6, canvas.height / 24, "white", "Galmuri7", "left");
+const highscoreText = new Text("Highscore - 0", canvas.height / 10, canvas.height / 4, canvas.height / 24, "white", "Galmuri7", "left");
+const gameOverText = new Text("Game Over", canvas.width / 2, canvas.height * 0.5, canvas.height / 12, "#ffffff00", "Galmuri7", "center");
+const restartText = new Text("Click to Restart", canvas.width / 2, canvas.height * 0.58, canvas.height / 20, "#ffffff00", "Galmuri7", "center");
 
 const drawable = [player, platform];
 const ui = [scoreText, highscoreText, gameOverText, restartText]
@@ -168,16 +175,6 @@ function start() {
     
     init();
     
-    getJSON("https://api.openweathermap.org/data/2.5/weather?q=seoul&appid=f19be282bbe4297868c0f1088f7477cd&units=metric", function (err, data) {
-        if (err !== null) {
-            console.log('Something went wrong: ' + err);
-        } else {
-            console.log(data.wind);
-            wind = data.wind.speed * Math.cos(data.wind.deg * Math.PI / 180);
-            console.log(wind);
-        }
-    });
-    
     requestAnimationFrame(update);
 }
 
@@ -190,6 +187,16 @@ function init() {
     
     scoreInterval = setInterval(() => score++, 20);
     enemyInterval = setInterval(spawnEnemy, 1000);
+    
+    getJSON("https://api.openweathermap.org/data/2.5/weather?q=seoul&appid=f19be282bbe4297868c0f1088f7477cd&units=metric", function (err, data) {
+        if (err !== null) {
+            console.log('Something went wrong: ' + err);
+        } else {
+            console.log(data.wind);
+            wind = data.wind.speed * Math.cos(data.wind.deg * Math.PI / 180) * canvas.height / 1200;
+            console.log(wind);
+        }
+    });
     
     isPlaying = true;
 }
@@ -211,8 +218,6 @@ function getJSON(url, callback) {
 
 function update() {
     requestAnimationFrame(update);
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
     
     if (isPlaying) {
         player.update();
@@ -223,7 +228,8 @@ function update() {
         }
     }
     
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#123456";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
     drawable.forEach(obj => obj.draw());
     enemys.forEach(enemy => enemy.draw());
     ui.forEach(obj => obj.draw());
