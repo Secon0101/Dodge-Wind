@@ -269,6 +269,12 @@ function getJSON(url, callback) {
 function update() {
     requestAnimationFrame(update);
     
+    if (keys.KeyP) {
+        region = prompt("지역을 입력하세요. (다음 게임부터 적용됩니다!)", region);
+        keys.KeyP = false;
+    }
+    
+    // update
     enemys.forEach(enemy => enemy.update());
     particles.forEach(particle => {
         particle.update();
@@ -284,6 +290,7 @@ function update() {
         }
     }
     
+    // draw
     ctx.fillStyle = "#123456";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     drawable.forEach(obj => obj.draw());
