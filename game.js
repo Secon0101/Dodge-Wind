@@ -13,8 +13,10 @@ const keys = {};
 let score = 0;
 let highscore = 0;
 let isPlaying = true;
-let scoreInterval;
 let wind = 0;
+let weather = "";
+let windCoeff = canvas.height * 0.001;
+let region = "Seoul";
 
 const player = {
     x: 0,
@@ -22,20 +24,22 @@ const player = {
     dx: 0,
     dy: 0,
     onGround: false,
-
-    width: canvas.height / 20,
-    height: canvas.height / 20,
-    initX: (canvas.width - canvas.height / 20) / 2,
-    initY: canvas.height * 0.8 - canvas.height / 20,
-    moveSpeed: canvas.height / 120,
-    gravity: -canvas.height / 600,
-    jumpForce: canvas.height / 40,
+    
+    width: canvas.height * 0.05,
+    height: canvas.height * 0.05,
+    color: "lime",
+    initX: (canvas.width - canvas.height * 0.05) * 0.5,
+    initY: canvas.height * 0.8 - canvas.height * 0.05,
+    moveSpeed: canvas.height * 0.008,
+    gravity: -canvas.height * 0.001,
+    jumpForce: canvas.height * 0.02,
      
     init() {
         this.x = this.initX;
         this.y = this.initY;
         this.dx = 0;
         this.dy = 0;
+        this.color = "lime";
     },
     
     update() {
@@ -73,7 +77,7 @@ const player = {
     },
     
     draw() {
-        ctx.fillStyle = "lime";
+        ctx.fillStyle = this.color;
         ctx.fillRect(this.x, this.y, this.width, this.height);
     },
 };
@@ -82,7 +86,7 @@ const platform = {
     x: canvas.width * 0.1,
     y: canvas.height * 0.8,
     width: canvas.width * 0.8,
-    height: canvas.height / 30,
+    height: canvas.height * 0.03,
     
     draw() {
         ctx.fillStyle = "black";
@@ -94,9 +98,9 @@ class Enemy {
     constructor(x, y) {
         this.x = x;
         this.y = y;
-        this.width = canvas.height / 30;
-        this.height = canvas.height / 30;
-        this.speed = canvas.height / 600;
+        this.width = canvas.height * 0.03;
+        this.height = canvas.height * 0.03;
+        this.speed = canvas.height * 0.002;
     }
     
     calculateDirection() {
@@ -126,6 +130,37 @@ class Enemy {
     }
 }
 
+class Weather {
+    constructor(x, y, speed) {
+        this.x = x;
+        this.y = y;
+        this.speed = speed;
+    }
+    
+    update() {
+        this.x += wind;
+        this.y += this.speed;
+    }
+    
+    draw() {
+        if (weather == "Snow") {
+            ctx.beginPath();
+            ctx.fillStyle = "white";
+            ctx.arc(this.x, this.y, canvas.height * 0.003, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.closePath();
+        } else {
+            ctx.strokeStyle = "skyblue";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(this.x, this.y);
+            ctx.lineTo(this.x + wind, this.y + canvas.height * 0.017);
+            ctx.stroke();
+            ctx.closePath();
+        }
+    }
+}
+
 class Text {
     constructor(text, x, y, size, color, font, align) {
         this.text = text;
@@ -147,14 +182,16 @@ class Text {
     }
 }
 
-const scoreText = new Text("Score - 0", canvas.height / 10, canvas.height / 6, canvas.height / 24, "white", "Galmuri7", "left");
-const highscoreText = new Text("Highscore - 0", canvas.height / 10, canvas.height / 4, canvas.height / 24, "white", "Galmuri7", "left");
-const gameOverText = new Text("Game Over", canvas.width / 2, canvas.height * 0.5, canvas.height / 12, "#ffffff00", "Galmuri7", "center");
-const restartText = new Text("Click to Restart", canvas.width / 2, canvas.height * 0.58, canvas.height / 20, "#ffffff00", "Galmuri7", "center");
+const scoreText = new Text("Score - 0", canvas.height * 0.07, canvas.height * 0.12, canvas.height * 0.04, "white", "Galmuri7", "left");
+const highscoreText = new Text("Highscore - 0", canvas.height * 0.07, canvas.height * 0.2, canvas.height * 0.04, "white", "Galmuri7", "left");
+const gameOverText = new Text("Game Over", canvas.width * 0.5, canvas.height * 0.5, canvas.height * 0.08, "#ffffff00", "Galmuri7", "center");
+const restartText = new Text("Click to Restart", canvas.width * 0.5, canvas.height * 0.58, canvas.height * 0.05, "#ffffff00", "Galmuri7", "center");
+const windText = new Text(`${region}       - 0.0 -`, canvas.width * 0.96, canvas.height * 0.95, canvas.height * 0.04, "white", "Galmuri7", "right");
 
 const drawable = [player, platform];
-const ui = [scoreText, highscoreText, gameOverText, restartText]
+const ui = [scoreText, highscoreText, gameOverText, restartText, windText]
 const enemys = [];
+const particles = [];
 
 start();
 
@@ -187,14 +224,27 @@ function init() {
     
     scoreInterval = setInterval(() => score++, 20);
     enemyInterval = setInterval(spawnEnemy, 1000);
+    setInterval(makeWeatherParticle, 30);
     
-    getJSON("https://api.openweathermap.org/data/2.5/weather?q=seoul&appid=f19be282bbe4297868c0f1088f7477cd&units=metric", function (err, data) {
+    getJSON(`https://api.openweathermap.org/data/2.5/weather?q=${region}&appid=f19be282bbe4297868c0f1088f7477cd&units=metric`, function (err, data) {
         if (err !== null) {
             console.log('Something went wrong: ' + err);
         } else {
+            // 풍속
             console.log(data.wind);
-            wind = data.wind.speed * Math.cos(data.wind.deg * Math.PI / 180) * canvas.height / 1200;
+            wind = data.wind.speed * Math.cos(data.wind.deg * Math.PI / 180) * windCoeff;
             console.log(wind);
+            if (wind > 0) {
+                windText.text = `${region}       ${wind.toFixed(1)} ->`;
+            } else if (wind < 0) {
+                windText.text = `${region}       <- ${Math.abs(wind.toFixed(1))}`;
+            } else {
+                windText.text = `${region}       - 0.0 -`;
+            }
+            
+            // 날씨
+            weather = data.weather[0].main;
+            console.log(weather);
         }
     });
     
@@ -219,9 +269,15 @@ function getJSON(url, callback) {
 function update() {
     requestAnimationFrame(update);
     
+    enemys.forEach(enemy => enemy.update());
+    particles.forEach(particle => {
+        particle.update();
+        if (particle.y > canvas.height) {
+            particles.splice(particles.indexOf(particle), 1);
+        }
+    });
     if (isPlaying) {
         player.update();
-        enemys.forEach(enemy => enemy.update());
         scoreText.text = `Score - ${score}`;
         if (score > highscore) {
             setHighscore(score);
@@ -231,10 +287,11 @@ function update() {
     ctx.fillStyle = "#123456";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     drawable.forEach(obj => obj.draw());
+    particles.forEach(particle => particle.draw());
     enemys.forEach(enemy => enemy.draw());
     ui.forEach(obj => obj.draw());
 }
- 
+
 function spawnEnemy() {
     const enemy = new Enemy(0, 0);
     const rand = Math.floor(Math.random() * 4);
@@ -258,6 +315,11 @@ function spawnEnemy() {
     }
     enemy.calculateDirection();
     enemys.push(enemy);
+}
+
+function makeWeatherParticle() {
+    const weatherParticle = new Weather(Math.random() * canvas.width * 2 - canvas.width * 0.5, 0, Math.random() + canvas.height * 0.01);
+    particles.push(weatherParticle);
 }
 
 function onClickCanvas(event) {
@@ -289,6 +351,7 @@ function gameOver() {
         highscore = score;
         localStorage.setItem("highscore", highscore);
     }
+    player.color = "#00ff0000"
     gameOverText.color = "white";
     restartText.color = "white";
 }
