@@ -1,6 +1,6 @@
 # Dodge Wind
 <div align="center">
-  <img src="https://user-images.githubusercontent.com/77004054/200261869-dcf1cace-6fe9-4145-94cb-794638124fe8.png" width="40%">
+  <img src="https://user-images.githubusercontent.com/77004054/200261869-dcf1cace-6fe9-4145-94cb-794638124fe8.png" width="60%">
 </div>
 
 <br>
