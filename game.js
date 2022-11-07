@@ -187,9 +187,10 @@ const highscoreText = new Text("Highscore - 0", canvas.height * 0.07, canvas.hei
 const gameOverText = new Text("Game Over", canvas.width * 0.5, canvas.height * 0.5, canvas.height * 0.08, "#ffffff00", "Galmuri7", "center");
 const restartText = new Text("Click to Restart", canvas.width * 0.5, canvas.height * 0.58, canvas.height * 0.05, "#ffffff00", "Galmuri7", "center");
 const windText = new Text(`${region}       - 0.0 -`, canvas.width * 0.96, canvas.height * 0.95, canvas.height * 0.04, "white", "Galmuri7", "right");
+const changeWeatherKeyText = new Text("Press P key to change region", canvas.height * 0.07, canvas.height * 0.94, canvas.height * 0.03, "white", "Galmuri7", "left");
 
 const drawable = [player, platform];
-const ui = [scoreText, highscoreText, gameOverText, restartText, windText]
+const ui = [scoreText, highscoreText, gameOverText, restartText, windText, changeWeatherKeyText];
 const enemys = [];
 const particles = [];
 
@@ -270,7 +271,7 @@ function update() {
     requestAnimationFrame(update);
     
     if (keys.KeyP) {
-        region = prompt("지역을 입력하세요. (다음 게임부터 적용됩니다!)", region);
+        region = prompt("지역을 입력하세요. (다음 게임부터 적용됩니다!)\nex) Japan, London, Paris, America, ...", region);
         keys.KeyP = false;
     }
     
