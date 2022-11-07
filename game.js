@@ -292,7 +292,7 @@ function update() {
     }
     
     // draw
-    ctx.fillStyle = "#123456";
+    ctx.fillStyle = weather != "Snow" ? "#123456" : "#3a638c";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     drawable.forEach(obj => obj.draw());
     particles.forEach(particle => particle.draw());
